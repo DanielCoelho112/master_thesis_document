@@ -1,6 +1,6 @@
 Slide 1: 
 
-Olá a todos. O meu nome é Daniel Coelho, e o nome da minha tese é "Uma abordagem de manutenção preditiva baseada na segmentação de séries temporais". 
+Olá a todos. Eu sou o Daniel, e o nome da minha tese é "Uma abordagem de manutenção preditiva baseada na segmentação de séries temporais". 
 
 O Orientador é o Prof. José Santos, o coorientador é o Prof. Eugénio Rocha e o coorientador da empresa é o Eng. Duarte Almeida.
 
