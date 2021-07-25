@@ -1,0 +1,270 @@
+-----------------------------------------------------------------------------------------------------------------------------
+Q: Porque escolheste a Maria DB e não uma TSDB?
+
+A: Em primeiro lugar, a escolha da base de dados, neste caso, nao tem uma importancia significativa. Escolheu-se o Maria DB por 3 razoes: Segurança, Velocidade e Eficiencia. Poderia ter sido outra, como por exemplo Influx DB, que é uma base de dados própria para series temporais, no entanto muita da informação guardada não são séries tempoais... 
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+Q: Porque escolheste o Grafana?
+
+A: Em termos de ferramentas de visualização já trabalhei com NodeRed, Grafana e javascript, e a que achei que tinha mais qualidades era sem duvida o Grafana. Para começar é open source, depois tem uma integração bastante fácil com diferentes base de dados, como o caso da Maria DB usada. Uma outra vantagem é a facilidade de construção de dashboards, que comparando com o Node Red, a diferença é radical. 
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Podes dizer por palavras tuas o que é o PCA?
+
+A: O PCA é um algoritmo de redução dimensional. O objectivo é sumarizar a informação de várias features. O PCA é muito utilizado para representar dados multidimensionais num conjunto de variavies, de forma a ser possivel obeservar tendencias, clusters, anomalias... Que foi exatamente o que se fez neste projeto. Agora, confesso que não estou por dentro da matemática por trás, sei onde e o porque de se utilzar e assim o fiz.
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: O que é o Kafka?
+
+Kafka é um tipo de Message Oriented Middleware (MOM). Um MOM é um conceito que envolve transferencia de mensagens entre aplicações usando tópicos. Da mesma maneira que existe Kafka, existe o MQTT, o ROS que não abordei... 
+
+O Kafka é conhecido pela sua elevada performance, ao passo que o MQTT é mais conhecido por ser leve.  
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: O que é o Flask?
+
+Flask é uma API em python que permite criar REST API.
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: O que é o Docker?
+
+A: Docker é uma plataforma que simplifica muito das tarefas quando se faz o desenvolmentio e deployment de uma aplicação. O docker permite separar o codigo da infraestrutura onde o codigo corre, assim é possivel correr uma aplicação em qualquer computador sem se ter de preocupar com as librarias necessárias... É como se correse dentro de uma maquina virtual dentro do PC, com algumas diferenças porque o SO é o mesmo...
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+Q: Podes dizer por palavras tuas o que é o COPOD?
+-----------------------------------------------------------------------------------------------------------------------------
+
+A: O COPOD é um algoritmos de deteção de anomalias antes de mais. Ele é inspirado em cupulas para modelar dados multidimensionais. Mais uma vez, não sou conhecedor da matematica por trás, juntamente com o COPOD, usei o Angle Based Outlier Detection,o Sthocastic Outlier Selection, e outros que não referi no documento, o meu objectivo não foi conhecer todos os passos por trás de cada um dos algoritmos, mas sim, implementá-los todos e ver quais se ajustava melhor aos dados da prensa.
+
+
+Q: O que é uma anomalia? 
+
+A: Segundo Hawkings, uma anomalia é uma observação que se desvia tanto das observações restantes, que parece que foi gerada por um diferente mecanismo.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Diferenças entre Anomalia e Outlier?
+
+A: Um outlier é uma observação que se encontra afastada da média de uma distribuição, enquanto que uma anomalia é uma observação que parece que foi gerada por um mecanismo diferente.
+
+Só para dar um exemplo, há situações em que uma observação igual ao valor médio das restantes observações pode ser considerado uma anomalias e nunca um outlier.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+Q: Se tivesses de implementar isso amanha o que fazias? (Na prensa Haulick)
+
+A: Em primeiro lugar, era preciso alterar a forma de envio de informação dos sensores para o servidor. Ou pela instalação de um novo edge device ou pela adaptação do PLC existente. Depois era preciso correr os docker containers num servidor, e a partir daí estava tudo feito.
+
+A informação entrava na REST API, e depois as previsões podiam ser consultadas no dashboard do grafana, acessivel numa porta especifica no ip da empresa.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+
+Q: Se tivesses de implementar numa empresa nova, o que fazias?
+-----------------------------------------------------------------------------------------------------------------------------
+
+A: Nesse caso já era diferente, era preciso ver de forma poderiamos tirar mais partido da segmentação. No caso da prensa haulick and Ross, os estados foram o Working e o Stopped, no entanto noutro equipamento pode ser diferente. No entatno há um conjunto de tarefas que teria de ser igualmente efetuado. Primeiro era necessário conhecer o funcionamneto do equipamento, e avaliar a necessidade de colocação de mais sensores. Depois era preciso instalar um edge device e recolher a informação dos sensores. E de seguida seria correr os docker containers. 
+
+
+Q: Porque achas que a PdM ainda não é algo normal em todos os equipamentos?
+-----------------------------------------------------------------------------------------------------------------------------
+Não penso que seja uma questão de dinheiro, o investimento aqui necessário é o dos sensores, e atualmente, penso que a maior parte dos equipamento já vem com inumeors sensores, e quando nao vem, há sensores relativamente baratos. No meu ponto de vista a principal causa de isto não ser uma solução comum é a falta de conhecimento. Muitos dos engenheiros que estão responsaveis pelos equipamentos são Engenheiros Mecanicos, e de eletronica, e pelo menos os engenheiros mecanicos da UA, não têm background de machine learning e analise de dados. E penso que isso era uma questao a mudar, mas voltando á pergunta, acho que a principal causa é a falta de conhecimento.
+
+
+
+
+Q: Na linha tal, fizeste paragrafos para apresentar a figura dos skecths, porque?
+-----------------------------------------------------------------------------------------------------------------------------
+Foi erro, dei conta apenas depois de ter entrego.
+
+
+Q: Porque utilizaste as anomalias para ver se haviam problemas?
+-----------------------------------------------------------------------------------------------------------------------------
+
+Quando analisamos o funcionamento de um equipamento, uma avaria é um acontecimento raro no funcionamento de um equipamento, da mesma forma que uma anomalia é algo que foge a um padrão dos dados. Acho que esse é um bom paralismo para justificar a nossa escolha. E quanto a isso, existem alguns estudos a fazerem o mesmo, neste projeto isso não é novidade.
+
+
+
+Q: Tu apresentas uma nova abordagem, apresentas os resultados dessa abordagem, mas não apresentas os resultados das abordagens tradicionais, porque?
+-----------------------------------------------------------------------------------------------------------------------------
+
+Inicialmente o objetivo era efetuar a segmentação das séries temporias apenas, no entanto depois sentimos a necessidade de tirar utilidade dos segmentos criados, e daí a que surgiu a analise dos segmentos. E quando conseguimos detetar falhas antes delas ocorrerem foi a nossa validação, nos aqui não estavamos a tentar provar que a segmentalão com as anomalias era melhor que aplciar uma RNN. Apenas queriamos trazer ao barulho uma nova abordagem. Depois no artigo, sim, comparamos a segmentação sozinha, um algoritmos de ML sozinho, e a combinação das duas abordagens, e viu-se que a combinação das 2 abordagens teve uma eficiencia melhor.
+
+
+
+
+Q: Porque utilizaste redução dimensional, se não a tivesses usado, terias melhor resultados a um custo da rapidez?
+
+Há estudos que dizem que se uma redução de dados for bem implementada, é possivel obter melhores resultados do que com os dados todos. E foi com base nesses estudos que se implementou o PCA.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Consegues dizer que a combinação dos parametros que usaste é a melhor?
+
+Não, consigo dizer que há muitas piores, porque as testei, mas não consigo dizer que é a melhor. 
+Para isso era preciso o tal algoritmo de otimização.
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+
+Q: Na apresentação falaste em hyper parametros, mas no documento referes-te a eles como paramentros, qual é a diferença entre eles e porque a mudança?
+
+Isto é uma questão já dentro de Machine Learning, penso eu. Um parametro em ML é algo que se aprende dos dados, é uma variavel definida internamento no modelo.
+Um hyperparametro é algo externo ao modelo, que tem de ser definido pelo utilizador. Se olharmos para o sistema desenvilvido como um modelo, essas variaveis são hyperparametros e não parametros, e por isso penso que na tese o termo não é o mais correto.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Achas que a segmentação podia ser efetuada em qualquer outro equipamento?
+
+Claramente, a segmetnação baseia-se no principio dividir para conquistar, e penso que a sua utilizada se extende a qualquer equipamento.
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Porque dizes que a segmentação é o componetne principal?
+
+Porque é a novidade, é claro que se tirassemos a deteçaõ de anomalais, não existia sistema de PdM, no entanto, deteção de anomalias já há muitos estudos sobre isso, agora segemntação de séries temporais para sistemas de PdM, já não!
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Qual é a utilidade dos 3 digitos apresentados no dashboard?
+
+O objetivo é dar uma visão geral sobre se os equipamentos estão a trabalhar ou não naquele moemento.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: No final disseste que a abordagem no artigo não foi end to end, porque?
+
+A utilização da segmentação nesse caso, nao chegou a emitir previsoes, ainda havia mais uma camada que é a parte de ML, dai eu dizer que não foi end-to-end.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: af não esta nas abreviações
+
+A: Erro, obrigado por referir.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Não abordou protocos de segurança, por exemplo, se estiver alguém a enviar dados para a REST API o sistema é facilmente atacável.
+
+A: Esse não foi um foco do projeto desenvolvido. Este projeto faz parte de um projeto maior, e no final vai haver uma camada só de segurança, que está a ser desenvolvimento por outro elemento do grupo.
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Um capitulo com 2 paginas, acha bem?
+
+A: Eu dividi a implementação nos blocos fundamentais, envio, receçao, segmentação e analise. A meu ver, não fazia juntar 2 blocos num, preferi deixar um capitulo por bloco. A mim não me mete confusão ter um capitulo mais curto que os outros, a conclusão tambem so tem 2 paginas...
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Mecnica?
+
+A: Foi um erro do template que me passou despercebido.
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: No documento organization, trocaste a ordem do cap 2 com o cap 3.
+
+A: true.
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Falaste em RJ45 Connectors, o que são?
+
+A: É uma conexão que conecta um dispositivo a uma rede local. (cabo ethernet)
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Disseste que o Fb-score é uma média ponderada entre o precision e o recall, no entanto, na formula não parece.
+
+A: É uma média harmónica ponderada entre o precisio e o recall.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Porque usaste F3 score e não F1 score
+
+A: Achei por bem aumentar o peso do recall face ao do precision, dada a maior importancia de um falso negativo do que um falso positivo. 
+No entanto, tenho de admitir que na literartura, normalmente a metrica usada é o F1-score.
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: Porque decediste escrever em Ingles, é um pouco limitado
+
+A: Eu escolhi escrever em Ingles por duas razões, em primeiro lugar para facilitar o acesso ao documento a todo o mundo, eu ao longo do periodo da escrita da tese, consultei muitos documentos de universidades em que a lingua materna nao era o ingles, e preferia ter acesso a um documento em ingles, ainda que nao fosse uma escrita exemplar, do que ter acesso a um documento na lingua materna desse pais em que apartida não conseguia tirar nenhuma informação. 
+Em segundo lugar, o meu objetivo é seguir para doutoramento e então, faz todo o sentido começar já a escrever em ingles para me habituar e para melhorar. Sei que este argumento pode ser sujeito á critica que este não é o local para fazer testes e fazer experiencias, mas considero que isto é uma montanha que tem de ser escalada eventualmente, então prefiri começar o quanto antes.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: O que tencionas seguir?
+
+A: Surgiu a oportunidade de seguir doutoramente e entrar numa bolsa de investigação, e é esse o meu objetivo.
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Q: O que é uma série temporal?
+
+A: Uma série temporal é um conjunto de observações ao longo do tempo. A existencia do grandeza tempo, no eixo dos xx, é o que carateriza este dados.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
