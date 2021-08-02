@@ -1,0 +1,207 @@
+Slide 1: 
+
+Olá a todos. Eu sou o Daniel, e o nome da minha tese é "Uma abordagem de manutenção preditiva baseada na segmentação de séries temporais". 
+
+O Orientador é o Prof. José Santos, o coorientador é o Prof. Eugénio Rocha e o coorientador da empresa é o Eng. Duarte Almeida.
+
+Este projecto foi desenvolvido na Bosch Termotecnologia, e pertecence a um case study no projeto mobilizador Bosch Industria 4.0 - Augmented Humanity.
+
+
+
+Slide 2:
+
+O aumento da automatização proporcionada pela industria 4.0 aliada á crescente competitividade no mercado destaca a importancia de uma manutenção inteligente, por outras palavras, de uma manutenção preditiva.
+ 
+A manutenção preditiva consiste na análise de dados provenientes de sensores instalados no equipamento, de forma a prever quando uma determinada avaria irá ocorrer, agendando manutenções antes das avarias.
+
+Desta forma, maximiza-se o tempo entre manutenções sucessivas, minimizando assim, o numero de manutenções a efetuar no equipamento.
+
+
+
+Slide 3: 
+A implementação de sistemas de manutenção preditiva apresenta várias vantagens, tais como, um aumento entre 33-60% do tempo de vida do equipamento, uma reduçao de 10 a 15% dos custos de manutenção, uma redução entre 20-50% do tempo de planeamento de produçaõ e por fim, um aumento entre 10-20 % do tempo de funcioanemnto do equipamento.
+
+
+Slide 4:
+Este projeto pode ser decomposto em tres grandes objectivos, o primeiro consiste na centralização de dados de diversos equipamentos numa so plataforma, facilitando tanto a visualização como a análise dos dados.
+
+O segundo objetivo consiste no densenvolviemnto de um sistema de manutenção preditiva na prensa Haulick & Roos, com o intuito de diminuir o número de paragens não planeadas. Esta prensa é uma prensa mecanica que transforma chapas metálicas em diferentes tipos de peças, sendo responsável por abastecer várias linhas de produção. Neste caso, a prensa já apresentava todos os sensores necessários instalados, e por isso a primeira fase do sistema de manutenção preditiva já se encontrava realizado.
+
+
+Por último, o terceiro objectivo  consiste no desenvolvimento de uma plataforma de visualização, em que por um lado permite a visualização dos dados de todos os equipametnos, e por outro  permitir a visualização das previsões emitidas pelo sistema de manutenção preditiva.
+
+
+Slide 5:
+ 
+Neste Slide apresenta-se a arquitetura da solução proposta.
+
+A camada mais abaixo diz respeito aos diversos equipamentos espalhados pela instalação fabril, devidamente equipados com sensores. Na camada imediatamente acima estão ilustrados os edge devices. Deve existir pelo menos 1 edge device por equipamento e estes dispositivos são responsáveis por 2 funções, por um lado, proceder á aquisição dos dados medidos pelos sensores, por outro enviar esse informação para o servidor, mais precisamente para o comoponente DATA RECEPTION. 
+
+O data reception recebe os dados e encaminha a informação de uma forma normalizada para o componente time series segmentation.  
+
+O componente Time Series Segmentation é o componente princial do sistema desenvolvido. O objectivo é dividir os dados provenientes de cada equipamento em diferentes segmentos, em que cada segmento representa um estado diferente de cada equipamento.
+Assim, o proximo componente, SEGMENT ANALYSIS AND FORECASTS, apenas  analisa dados pertencentes ao mesmo segmento, facilitanto tanto extração de padrões como a deteção de anomalias.
+
+No final do Segment Analysis and Forecasts, é guardada na base de dados uma previsão relativa ao futuro estado funcioanamento de cada equipaemnto, sendo posteriormente apresentada na plataforma de visualização. A equipa de manutenção através da consulta da plataforma de visualização, consegue verificar se algum dos equipamentos necessita ou não de mamnutenção.
+
+
+Esta plataforma constitui uma solução end-to-end de um sistema de manutenção preditiva, uma vez que recebe dados em tempo real de diversos equipamentos, e emite constantemente previsões para a platadorma de visualização.
+
+
+
+
+Slide 6:
+
+Neste slide apresenta-se a solução implementada, representado todo o software e hardware usado. Foram utilizados 2 equipamentos, bosch_prensa01 e bosch_prensa02.
+ O bosch_prensa01 diz respeito á prensa Haulick and Roos. De forma a simular o envio de dados em tempo real por parte da prensa, foi elaborado um serviço que lê um ficheiro CSV contendo os dados dos sensores da prensa, e simula o funcionamento de um Edge Device, estando constantemetne a enviar dados REAIS dos sensores para o Data Reception.
+
+Quanto ao equipamento bosch_prensa02, este não constitui de facto um equipamento, apenas representa um sistema de aquisição de dados pronto a ser instalado em qualquer equipamento. É consituido por um módulo GY-91 capaz de  medir aceceleraçes em 3 direções distintas e por um ESP32 a servir como EDGE DEVICE.  O objectivo deste equipamento é testar o funcioanemnto da plataforma desenvolvida quando existe mais do que 1 equipamento a enviar dados.
+
+
+Para o componente Data Reception, desenvolveu-se uma REST API usando a livraria FLASK em que, OS EDGE DEVICES, por cada medição extraida do sensor, enviam um POST REQUEST contendo um ficheiro JSON, e o REST API ao receber essa informação gera uma mensagem Kafka com os mesmos campos do ficheiro JSON, e reencaminha-a para o componente TIME SERIES SEGEMNTATION. 
+
+O compoentne TIME SERIES SEGEMNTATION foi implementado utilizando KAFKA como Message Oriented Middleware, devido á sua elevada performance e elevada escalabilidad uma vez que  para se efetuar a segmentação dos dados é necessário realizar várias transformações de dados, como por exemplo validações e agregrações, e portanto tinha de se usar uma ferramenta bastante eficiente, caso contrário, existiria o risco da existencia de gargalos no pipeline.
+
+Para a base de dados foi escolhida a MARIADB enquanto que para a plataforma de visualização optou-se pelo GRAFANA.
+
+Todos os compoentens do sistema desenvolvido foram containarizados utilizando Docker containers, de forma a facilitar tanto  o desenvolvimento como a implementação do sistema.
+
+
+
+Slide 7:
+
+O elemento diferenciador da abordagem proposta é a segmentação das séries temporais em 2 segmentos, Working e Stopped. Através de uma analise aos dados da prensa, é possivel identificar 3 padroes de funcionamento diferentes: existem periodos em que a prensa está a funcionar normalmente, existtem periodos em que a prensa está parada, e existem periodos em que, embora a prensa esteja a funcionar, está em periodos de teste.  A frequencia com que os dados são enviados pelo Edge Device, permite claramente identificar estes 3 periodos. Sempre que a frequencia de envio dos dados está próxima de 1Hz, a prensa encontra-se a funcionar normalmente, sempre que a frequencia é 0HZ, ou seja, não está a enviar dados, a prensa está parada, e sempre que a frequencia encontra-se entre 0 e 0.5 Hz, a prensa encontram-se em periodos de testes. A segmentação implementada agrupa os periodos de teste e paragem no Segmento Stopped, deixando apenas dados relativos ao periodo em que a prensa está a funcionar no segmento Working. Neste caso, a segmentação implementada pode ser vista como um filtro, dado que separa os dados uteis dos restantes dados, e são estes dados uteis que posteriormente serão analisados, reduzindo a complexidade dos algoritmos a implementar.
+
+Na figura apresentada, é possivel visualizar a serie temporal relativa ao nivel do oleo devidamente segmentada nos estados considerados. Os segmentos diferentes são identificados com uma cor diferente: os segmentos working são represnetados com a cor verde, e os segmentos Stopped são representados com a cor vermelha. Por volta das 19:50, o espaçamento temporal entre observações sucessivas aumenta, identificando um periodo em que se estava a efetuar algum teste na prensa, e como se pode ver, o estado ativado nesse instante foi o Stopped e não o Working. Desta forma, na analise de segmentos, os dados relativos ao teste não serão utilizados.
+
+Embora neste trabalho os estados considerados foram WOrking e Stopped, o conceito da segmentação pode ser ainda mais explorado, como por exemplo separar a fase de subida do nivel do oleo, da fase em que o nivel de oleo se encontra estável. Esta dupla segmentação iria permitir analisar segmentos que contêm dados com um grau de semelhança entre eles bastante superior, sendo expectavel um  aumento da sensibilidade do algoritmos de deteção de anomalias.
+
+
+
+
+Slide 8:
+
+Aqui apresenta-se o pipeline da analise dos segmentos. 
+
+ O intervalo de tempo entre duas analises de segmentos consecutivas é um dos 7 parametros a ser definido, tendo-se utilizado, neste caso, 10 minutos. Esta analise apenas se efetuou para o equipamento bsoch_prensa01 pois no outro equipamento não é possivel prever avarias.
+
+Todas as séries temporais de cada equipamento são analisados, para o caso do equipamento bosch_prensa01, existem 6 séries temporais e portanto são todas analisadas. No entatno, não se analisa a serie temporal toda,  apenas se analisam os segmentos Working de cada uma das série temporais.
+A vantagem de se analisar apenas o segmentos WORKING, como foi referido anteriormente,  consiste na não inclusão de ruido nesta análise. 
+
+O objetivo principal desta analise consiste na deteção de anomalias nas séries temporais. No entanto, antes de se aplicar um algoritmos de deteção de anomalias é necessário efetuar um processamento de dados para, por um lado, aumentar a performance do algoritmo de deteção de anomalias, e por outro, aumentar a rapidez com que esta deteção se efetua.
+
+
+Slide 9:
+
+Uma das consequencias de analisar apenas segmentos de series temporasis é a existencia de periodos de tempo em que não existem dados, por isso o primeiro passo a efetuar é a uniao dos segmentos, dando origem a uma base temporal virtual.
+
+Slide 10:
+
+Posteriormente é necessario efetuar uma normalização dos daddos, dado que existem séries temporais com valores bastante superiores a outras, existindo o risco de na análise de dados se atrinuir mais peso a umas séries do que a outras. O método utilizado  foi A normalização para o minimo e maximo. NORMALIZANDO DESTA FORMA TODAS AS SERIES TEMPORAIS ENTRE 0 E 1.
+
+Slide 11:
+
+A seguir efetua-se uma redução dos dados, mais precisamente uma reduçao dimensional. Nesta etapa o objetivo é eliminar algumas séries temporais e criar novas séries  que contêm a informação necessária sobre os dados iniciais. Neste caso, foi utilizado o metodo Principal Component Analysis,  e conseguiu-se reduzir as 6 series iniciais para 2, perdendo apenas 7.4% de variabilidade! Desta forma, é possivel reduzir o tempo de processamento do algoritmo de deteção de anomalias, uma vez que em vez de 6 séries temporais, apenas são analisadas 2.
+
+Slide 12:
+
+Por utlimo, é efetuado a deteçao de anomalias nas séries criadas pelo PCA. FORAM TESTADOS VÁRIOS ALGORITMOS DE DETEÇAO DE ANOMALIAS, entre os quais, ABOD, SOS e COPOD, sendo que o que obteve melhores resultados foi o COPOD.
+No final das anomalias serem detetadas, o instante em que foram detetadas é convertida para a base temporal real e apenas são consideradas as anomalias que ocorreram nos ultimos 10 minutos. Como a analise dos segmentos ocorre de 10 em 10 minutos, caso de detetasse anomlias há mais de 10 minutos, existia o risco de se contabilizar duas vezes a mesma anomalia.
+
+ Dependo do numero de anomalias detetados nos ultimos 10 min, é enviada um alerta Safe ou Warning para a base de dados. Safe é quando se detetaram menos de 4 anomalias e portanto assume-sse que o comportamtno do equipamento está dentro do normal, Warnign é quando se detetrram mais de 3 anomalias, assumindo-se que existe um comportamento anormal do equipamento, sendo necessário parar o equipaemnto e efetar uma revisão geral.
+
+
+
+Slide 13:
+ A partir de agora apresentar-se-ão os resultados obtidos. Em primeiro lugar vai se apresentar o dashboard do Grafana para o bosch_prensa02, de seguida apresenta-se o dashboard para o equipamento bosch_prensa01 e por fim, proceder-se-á a uma analise das previsões obtidas.  
+Todos os dados que serão apresentados dizem respeito a um periodo de 15h, 15min e 44s em que se simulou em tempo real o envio de dados por parte dos 2 equipamentos.
+Os dados do equipaemtno bosch_prensa01 que foram enviados para o sistema pertencem ao dia 18/08/2020.
+
+
+Slide 14:
+
+O equipamento bosch_prensa02, como se pode ver no canto inferior esquerdo apresneta 3 sensores, sendo que no painel time series segmentation está-se representado o Shaft VibrationX. Ao longo desta serie temporal é possivel identificar claramente os dois segmentos. Neste caso, a paragem do equipamento foi provocada de forma deliberada, cortando a corrente ao ESP32.
+
+No que diz respeito as previsoes os paineis estão vazios, uma vez que não se efetuou a analise dos segmentos para este equipamento. 
+
+NO canto inferior direito apresentam-se 3 digitos relativos a todos os equipamentos em geral e não apenas ao selecionado. O number of equipment diz respeito ao numero de equipamentos que estao a enviar dados para o sistema desenvolvido, o Working representa O NUMERO DE EQUIPAMENTOS QUE ESTAO COM O ESTADO WORKING ATIVO, e o Stopped  quantifica os restantes equipamentos.
+
+
+Slide 15: 
+
+Quanto ao equipaemnto bosch_prensa01, para além de toda a informaçao apresentada no equipamento bosch_prensa02 também apresenta um painel que indica a ultima previsao emitida bem como um historio das previsoes efetuadas ao longo do tempo.   No painel da time series segemntatnion, existe uma sobreposição das anomalias detetadas á serie temporal do Nivel de Oleo, as anomalias estão identificadas utilizando linhas verticais roxas.
+
+Slide 16:
+
+A análise das previsões foi efetuada através da comparação do histórico das previsões presente no dashboard do equipamento bosch_prensa01 com um shiftbook que contém a descrição das paragens da prensa relativas ao dia 18/08/2020.
+
+Posto isso, inicialmente irão ser abordadas as paragens existintes no shiftbook , e posteriormente serão analisadas as previsões para cada paragem em detalhe. No final, serão aprensetandas algumas métricas de forma a ser possivel quantificar a eficiencia das previsões obtidas.
+
+
+Slide 17:
+Nesta tabela encontram-se as 12 falhas reportadas no shiftbook relativas ao dia 18/08/2020. No entatno, através da analise dos dados, é possivel detetar a existencia de 33 paragens.
+
+Na tabela cada linha é uma paragem reporatada, apresentando-se a descrição da paragem, o inicio, fim e duração da paragem, e por fim, identifica-se se a paragem foi provocada por avaria ou não.
+
+
+ Das 12 paragens reportadas apenas 2 foram provocadas por avarias, a paragem 1 foi provocada por uma chapa encravada e durou 1h e 10 min 9s  e a paragem 8, foi provocada por uma falha mecanica, mais precisamento fuga de oleo, e durou 5h 14 min 57s. As restantes paragens não foram provocadas por avaria, sendo portanto, impossiveis de prever.
+
+
+Slide 18:
+Neste slide é possivel verificar que as 2 paragens provocadas por avarias foram corretamente detetads com algum periodo de antecedencia, a paragem 1 foi detetada com uma antecedencia de 4 min e 23 s, e a paragem 8 foi detetada com uma antecedencia de 23min 51seg!
+
+Slide 19:
+Quanto ás restantes paragens, o objetivo era não ter sido emitido nenhum Warning, no entanto nas paragens 3 e 10 o sistema emitiu pelo menos um Warning, podendo-se considerar estas situações como FALSOS POSITIVOS! Ou seja, o sistema previu que existia algum problema, quando na realidade a paragem seguinte não foi causada por nenhuma avaria.
+
+
+
+Slide 20:
+
+De forma a resumir a informação apresentada anteriormente foi elaborada uma confusion matrix. Esta matriz compara os valores reais com as previsões. 
+
+Na primeira linha, primeira coluna, estão presentes os Verdadeiros Positivos, ou seja, o numero de vezes em que a paragem foi provocada por uma avaria e o sistema emitiu pelo menos um Warning antes da paragem, tendo-se obtidos dois verdadeiros positivos.
+Na primeira linha, segunda coluna, são assinalados os Falsos positivos, ou seja, o numero de vezes que o sistema emitiu pelo menos um Warning, no entanto a paragem seguinte nao foi provocada por nenhuma avaria, tendo-se obtidos 2 falsos positivos
+
+Na segunda linha, primeira coluna, estão presentes os os falsos negativos, ou seja, o numero de vezes que o sistema nao emitiu nenhum Warning no entanto o equipamento parou devido a uma avaria, não se tendo obtido nenhum destes casos.
+
+Por ultimo, na segunda linha, segunda coluna,   sao assinalados os verdadeiros negativos , ou seja, o nuemro de vezes que o sistema não emitiu nenhum Warning e a paragem seguinte nao foi provocada por uma avaria. Tendo-se obtido 29 verdadeiros negativos.
+
+Slide 21:
+
+Com base neste valores é possivel calcluar várias metricas para quantidficar as previsoes, O ACCURACY é definido como o rácio entre as previsoes corretas sobre o numero total de previsoes, tendo-se obtido um valor de 93.94%. Embora este resultado seja bastante elevado, esta métrica não é  métrica mais adequada para classificar um sistema de PdM, uma vez que os datasets utilizados não são equilibrado, ou seja, o numero de vezes que uma paragem é provocada por avaria é bastante inferior ao numero de vezes em que a paragem não é provocada por uma avaria. 
+
+Para além disto, a métrica ACCURACY atribui o mesmo peso a um falso positivo e um falso negativo, o que não faz sentido, pois  enquanto um falso negativo diz respeito a uma avaria que não foi detatada, um falso positivo apenas implica efetuar uma revisão no equipamento.   
+
+
+
+O Precision é definido como o racio entre as os Verdadeiros positivos e o numero total de previsoes positivas, tendo-se obtido uma eficiencia de 50%. Esta métrica foca-se na  analise dos falsos positivos, e pode-se concluir que sempre que o sistema emite um Warning, existe 50% de probabilidade de existir na realidade uma avaria no equipamento.
+
+O Recall é definido como o rácio entre os Verdadeiros positivos, e o numero total de casos positivos, como neste caso, todas as avarias foram corretamente identificadas, obteve-se 100%. Este valor é bastante satisfatorio uma vez que indica que o sistema consegue prever sempre as avarias.
+
+
+Por fim, apresneta-se o F beta score, esta métrica consiste numa media ponderada entre o Precision e o Recall, sendo B o numero de vezes que o Recall é mais importante. Neste caso atribui-se o valor 3 ao Beta, dando 3x mais peso aos falsos Negatios do que aos falsos positivos. Para esta métrica obteve-se o valor de 90.91 %
+
+ Considera-se que esta métrica é a que melhor quantifica a eficiencia das previsões obtidas, porque avalia tanto os falsos negativos como os falsos postivos atribuindo mais peso aos falsos negativos.
+
+
+Slide 22 - Depois de feitas as contas ao tempo que se pouparia ao evitar-se as paragens provocadas por avarias e considerando também o tempo necessário para parar o equipamento e efetuar uma revisão no equipamento sempre que se emitiu um Warning, conclui-se que, se o sistema desenvolvido estivesse em funcionamneto no dia 18/08/2020, a prensa trabalharia mais 4h, 55m e 06s. Considerando que apenas se analisou dados relativos a um periodo temporal de 15h, 15min e 44s, este tempo corresponde a 32% do tempo total simulado, o que é um valor bastante elevado.
+
+
+
+
+Slide 23-  Com base nos resultados apresentados nos slides anteriores é possivel afirmar que a abordagem proposta constitui uma solução viável no que diz respeito a sistemas de manutenção preditiva, mesmo tendo utilizado um dataset reduzido.
+
+Embora neste projeto se tenha utilizado uma abordagem end-to-end, recentemente submetemos um artigo numa conferencia com o titulo:  "Predictive maintenance on sensorized stamping presses by time
+series segmentation, anomaly detection, and classification algorithms", que mostra que a combinação da segmentação das series temporais, redução dimensional e deteção de anomalias com um algoritmo de machine learning permite alcançar uma melhoria de 37.4 % na métrica F1-score relativamente á utilização apenas da segmentação das séries temporais, e permite também alcançar uma melhoria de 30.0% na mesma métrica relativamente á utilização apenas do algoritmo de machine learning. O que claramente comprova o impacto que a segmentação das séries temporais tem.
+
+
+
+Como trabalho futuro, seria util o desenvolvimento de um algoritmo de otimização de forma a selecionar a melhor combinação de hyperparametros para cada equipamento. Existem 7 hyperparametros que podem ser diferentes dependendo do equipamento, o que por um lado oferece versatilidade ao sistema, mas por outro, aumenta a complexidade de implementação do sistema. 
+Neste projeto todos estes hyperparametros foram determinados com base no método tentativa e erro, no entanto se tivessemos 20 equipamentos esta método seria bastante moroso e ineficiente.
+
+Fim -
+
+Encerro assim a minha apresentação, Obrigado a todos pela atenção!
+
+
+
